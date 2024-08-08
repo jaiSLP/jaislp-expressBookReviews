@@ -12,18 +12,18 @@ const isValid = (user)=>{ //returns boolean
     }
     return false;
 }
-const authenticatedUser = (username,password)=>{ //returns boolean
-    if(isValid(username)){
-        let filtered_users = users.filter((user)=> (user.username===username)&&(user.password===password));
-        if(filtered_users){
-            return true;
-        }
+// Check if the user with the given username and password exists
+const authenticatedUser = (username, password) => {
+    // Filter the users array for any user with the same username and password
+    let validusers = users.filter((user) => {
+        return (user.username === username && user.password === password);
+    });
+    // Return true if any valid user is found, otherwise false
+    if (validusers.length > 0) {
+        return true;
+    } else {
         return false;
-       
     }
-    return false;
-    
-
 }
 
 regd_users.post("/register", (req,res) => {
@@ -72,7 +72,8 @@ regd_users.post("/login", (req,res) => {
 regd_users.put("/auth/review/:isbn", (req, res) => {
     const isbn = req.params.isbn;
     const review = req.query.review;
-    const username = req.query.username;
+    //const username = req.query.username;
+    const username = req.session.authorization.username;
     if (books[isbn]) {
       let book = books[isbn];
       book.reviews[username] = review;
@@ -85,7 +86,8 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
 
   regd_users.delete("/auth/review/:isbn", (req, res) => {
     const isbn = req.params.isbn;
-    const username = req.query.username;
+    //const username = req.query.username;
+    const username = req.session.authorization.username;
     if (books[isbn]) {
       let book = books[isbn];
       delete book.reviews[username];
