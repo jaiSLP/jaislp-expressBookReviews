@@ -3,6 +3,7 @@ let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
+const axios = require('axios');
 
 // Check if a user with the given username already exists
 const doesExist = (username) => {
@@ -45,7 +46,19 @@ public_users.get('/',function (req, res) {
     res.send(JSON.stringify(books,null,4));
 
 });
-
+//  Task10
+// Get book lists using Async/await
+public_users.get('/', async (req, res) => {
+    try {
+      const response = await axios.get('https://jaislp111-5000.theianext-1-labs-prod-misc-tools-us-east-0.proxy.cognitiveclass.ai/');   
+   
+      const bookData = response.data;
+      res.json(bookData);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Error fetching book list' });
+    }
+  });
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn',function (req, res) {
   //Write your code here
@@ -53,6 +66,20 @@ public_users.get('/isbn/:isbn',function (req, res) {
     res.send(books[isbn]);
   //return res.status(300).json({message: "Yet to be implemented"});
  });
+
+ //  Task 11
+// Get book details based on ISBN
+public_users.get('/isbn/:isbn', async (req, res) => {
+    const isbn = req.params.isbn;  
+    try {
+      const response = await axios.get(`https://jaislp111-5000.theianext-1-labs-prod-misc-tools-us-east-0.proxy.cognitiveclass.ai/${isbn}`);
+      const bookData = response.data;
+      res.json(bookData);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Error fetching book details' });
+    }
+  });
   
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
@@ -68,6 +95,22 @@ public_users.get('/author/:author',function (req, res) {
   //return res.status(300).json({message: "Yet to be implemented"});
 });
 
+//Task 12 -- get books by author
+public_users.get('/author/:author', async (req, res) => {
+    const author = req.params.author;  
+    try {
+      const allBooks = Object.values(books); // Convert to array  
+      const foundBooks = allBooks.filter(book => book.author === author);  
+      if (foundBooks.length > 0) {
+        res.json(foundBooks);
+      } else {
+        res.status(404).json({ message: 'No books found for the author' });
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Error fetching books by author' });
+    }
+  });
 // Get all books based on title
 public_users.get('/title/:title',function (req, res) {
   //Write your code here
@@ -83,6 +126,23 @@ public_users.get('/title/:title',function (req, res) {
   //return res.status(300).json({message: "Yet to be implemented"});
 });
 
+//Task 13 - get books by title
+public_users.get('/title/:title', async (req, res) => {
+    const title = req.params.title;
+  
+    try {      
+      const allBooks = Object.values(books);
+      const foundBook = allBooks.find(book => book.title === title);  
+      if (foundBook) {
+        res.json(foundBook);
+      } else {
+        res.status(404).json({ message: 'Book not found' });
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Error fetching book by title' });
+    }
+  });
 //  Get book review
 public_users.get('/review/:isbn',function (req, res) {
   //Write your code here
