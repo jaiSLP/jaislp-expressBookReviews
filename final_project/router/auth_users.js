@@ -4,28 +4,6 @@ let books = require("./booksdb.js");
 const regd_users = express.Router();
 
 let users = [];
-
-const isValid = (user)=>{ //returns boolean
-    let filtered_users = users.filter((user)=> user.username === user);
-    if(filtered_users){
-        return true;
-    }
-    return false;
-}
-// Check if the user with the given username and password exists
-const authenticatedUser = (username, password) => {
-    // Filter the users array for any user with the same username and password
-    let validusers = users.filter((user) => {
-        return (user.username === username && user.password === password);
-    });
-    // Return true if any valid user is found, otherwise false
-    if (validusers.length > 0) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
 regd_users.post("/register", (req,res) => {
     //Write your code here
     const username = req.body.username;
@@ -50,30 +28,42 @@ regd_users.post("/register", (req,res) => {
    
   });
 
-//only registered users can login
-regd_users.post("/login", (req,res) => {
-    let user = req.body.username;
-    let pass = req.body.password;
-    if(!authenticatedUser(user,pass)){
-        return res.status(403).json({message:"User not authenticated"})
+const isValid = (user)=>{ //returns boolean
+    console.log("Users", users);
+    let filtered_users = users.filter((user)=> user.username === user);
+    if(filtered_users){
+        return true;
     }
+    return false;
+}
+// Check if the user with the given username and password exists
+const authenticatedUser = (username, password) => {
+    console.log("Received username:", username);
+    console.log("Received password:", password);
+    console.log("Users", users);
+    // Filter the users array for any user with the same username and password
+    let validusers = users.filter((user) => {
+        return (user.username === username && user.password === password);
+    });
+    console.log("Authentication result:", validusers);
+    // Return true if any valid user is found, otherwise false
+    if (validusers.length > 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
 
-    let accessToken = jwt.sign({
-        data: user
-    },'access',{expiresIn:60*60})
-    req.session.authorization = {
-        accessToken
-    }
-    res.send("User logged in Successfully")
- 
-});
+
 
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
     const isbn = req.params.isbn;
-    const review = req.query.review;
+    const review = req.body.review;
+    console.log("Put review:", review);
     //const username = req.query.username;
     const username = req.session.authorization.username;
+    console.log("Put Username:", username);
     if (books[isbn]) {
       let book = books[isbn];
       book.reviews[username] = review;
@@ -101,3 +91,8 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
 module.exports.users = users;
+
+module.exports.authenticatedUser = authenticatedUser;
+  
+
+//module.exports = regd_users;
